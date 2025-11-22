@@ -687,6 +687,46 @@
             margin-top: 4px;
         }
         
+        /* Claim Buttons */
+        .claim-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .claim-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .claim-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+        }
+        
+        .claim-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .claim-btn.claim-sgb {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .claim-btn.claim-sgb:hover:not(:disabled) {
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+        
         /* Withdraw Button */
         .withdraw-btn {
             display: block;
@@ -1037,8 +1077,12 @@
                             <div class="position-stat-label">BAKE Value</div>
                         </div>
                         <div class="position-stat">
-                            <div class="position-stat-value reward" id="posRewards">0</div>
-                            <div class="position-stat-label">Rewards</div>
+                            <div class="position-stat-value reward" id="posBakeRewards">0</div>
+                            <div class="position-stat-label">BAKE Rewards</div>
+                        </div>
+                        <div class="position-stat">
+                            <div class="position-stat-value reward" id="posSgbRewards">0</div>
+                            <div class="position-stat-label">SGB Rewards</div>
                         </div>
                         <div class="position-stat">
                             <div class="position-stat-value" id="posUnlockTime">--</div>
@@ -1054,6 +1098,15 @@
                     <button class="withdraw-btn" id="withdrawBtn" disabled>
                         🔒 Locked - Withdraw Unavailable
                     </button>
+                    
+                    <div class="claim-buttons">
+                        <button class="claim-btn" id="claimBakeBtn" disabled>
+                            Claim BAKE
+                        </button>
+                        <button class="claim-btn claim-sgb" id="claimSgbBtn" disabled>
+                            Claim SGB
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1193,6 +1246,8 @@
         const bakeBalance = document.getElementById('bakeBalance');
         const positionPanel = document.getElementById('positionPanel');
         const withdrawBtn = document.getElementById('withdrawBtn');
+        const claimBakeBtn = document.getElementById('claimBakeBtn');
+        const claimSgbBtn = document.getElementById('claimSgbBtn');
         const maxBtn = document.getElementById('maxBtn');
         const lockTiers = document.getElementById('lockTiers');
         
@@ -1225,6 +1280,10 @@
             
             // Setup withdraw button
             withdrawBtn.addEventListener('click', handleWithdraw);
+            
+            // Setup claim buttons
+            claimBakeBtn.addEventListener('click', handleClaimBake);
+            claimSgbBtn.addEventListener('click', handleClaimSgb);
             
             // Check if already connected
             if (window.ethereum && window.ethereum.selectedAddress) {
@@ -1405,12 +1464,14 @@
                 // getLPInfo returns: sgbDeposited, bakeDeposited, weightedShares, poolPercent, lockTier, lockExpires, multiplier, pendingBAKE, pendingSGB, claimableSGB, timeUntilSGBClaim
                 const sgbDeposited = parseFloat(ethers.utils.formatEther(lpInfo.sgbDeposited));
                 const bakeDeposited = parseFloat(ethers.utils.formatEther(lpInfo.bakeDeposited));
-                const poolPercent = parseFloat(ethers.utils.formatEther(lpInfo.poolPercent)) * 100;
+                // poolPercent is basis points (10000 = 100%), divide by 100 to get percentage
+                const poolPercent = lpInfo.poolPercent.toNumber() / 100;
                 const lockExpires = lpInfo.lockExpires.toNumber();
                 const lockTier = lpInfo.lockTier.toNumber();
                 const multiplier = lpInfo.multiplier.toNumber();
                 const pendingBAKE = parseFloat(ethers.utils.formatEther(lpInfo.pendingBAKE));
                 const pendingSGB = parseFloat(ethers.utils.formatEther(lpInfo.pendingSGB));
+                const claimableSGB = parseFloat(ethers.utils.formatEther(lpInfo.claimableSGB));
                 const bonus = nftBonus.toNumber();
                 
                 if (sgbDeposited > 0 || bakeDeposited > 0) {
@@ -1418,7 +1479,7 @@
                     positionPanel.classList.add('has-position');
                     lockTiers.classList.add('hidden'); // Hide tier selection for existing LPs
                     
-                    document.getElementById('posLpTokens').textContent = poolPercent.toFixed(4) + '%';
+                    document.getElementById('posLpTokens').textContent = poolPercent.toFixed(2) + '%';
                     document.getElementById('posSgbValue').textContent = formatNumber(sgbDeposited) + ' SGB';
                     document.getElementById('posBakeValue').textContent = formatNumber(bakeDeposited) + ' BAKE';
                     
@@ -1443,8 +1504,26 @@
                         document.getElementById('nftBonusInfo').classList.remove('active');
                     }
                     
-                    // Pending rewards
-                    document.getElementById('posRewards').textContent = formatNumber(pendingBAKE) + ' BAKE';
+                    // Pending rewards - show both BAKE and SGB
+                    document.getElementById('posBakeRewards').textContent = formatNumber(pendingBAKE) + ' BAKE';
+                    document.getElementById('posSgbRewards').textContent = formatNumber(claimableSGB) + ' SGB';
+                    
+                    // Enable/disable claim buttons based on available rewards
+                    if (pendingBAKE > 0) {
+                        claimBakeBtn.disabled = false;
+                        claimBakeBtn.textContent = 'Claim ' + formatNumber(pendingBAKE) + ' BAKE';
+                    } else {
+                        claimBakeBtn.disabled = true;
+                        claimBakeBtn.textContent = 'No BAKE to Claim';
+                    }
+                    
+                    if (claimableSGB > 0) {
+                        claimSgbBtn.disabled = false;
+                        claimSgbBtn.textContent = 'Claim ' + formatNumber(claimableSGB) + ' SGB';
+                    } else {
+                        claimSgbBtn.disabled = true;
+                        claimSgbBtn.textContent = 'No SGB to Claim';
+                    }
                 } else {
                     userHasPosition = false;
                     positionPanel.classList.remove('has-position');
@@ -1572,6 +1651,52 @@
                 alert('Withdraw failed: ' + (err.reason || err.message));
             } finally {
                 await loadUserPosition(); // Reset button state
+            }
+        }
+        
+        async function handleClaimBake() {
+            if (!isConnected) return;
+            
+            try {
+                claimBakeBtn.disabled = true;
+                claimBakeBtn.textContent = 'Claiming...';
+                
+                const poolContract = new ethers.Contract(CONTRACTS.bakePool, BAKEPOOL_ABI, signer);
+                const tx = await poolContract.claimBAKE();
+                await tx.wait();
+                
+                alert('BAKE claimed!');
+                
+                await updateWalletUI();
+                await loadUserPosition();
+                
+            } catch (err) {
+                console.error('Claim BAKE failed:', err);
+                alert('Claim failed: ' + (err.reason || err.message));
+                await loadUserPosition();
+            }
+        }
+        
+        async function handleClaimSgb() {
+            if (!isConnected) return;
+            
+            try {
+                claimSgbBtn.disabled = true;
+                claimSgbBtn.textContent = 'Claiming...';
+                
+                const poolContract = new ethers.Contract(CONTRACTS.bakePool, BAKEPOOL_ABI, signer);
+                const tx = await poolContract.claimSGB();
+                await tx.wait();
+                
+                alert('SGB claimed!');
+                
+                await updateWalletUI();
+                await loadUserPosition();
+                
+            } catch (err) {
+                console.error('Claim SGB failed:', err);
+                alert('Claim failed: ' + (err.reason || err.message));
+                await loadUserPosition();
             }
         }
         
