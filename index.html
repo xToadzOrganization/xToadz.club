@@ -1115,8 +1115,8 @@
         const SONGBIRD_RPC = 'https://songbird-api.flare.network/ext/C/rpc';
         
         const CONTRACTS = {
-            bakePool: ethers.utils.getAddress('0xAa2D4a6A2821E39CBCa695358DAeDDb4137316C3'),
-            bakeToken: ethers.utils.getAddress('0xba3a30ffd8a8a18c90b275fc7fe2f8efd77e30ce'),
+            bakePool: ethers.utils.getAddress('0x44dec5Ba2116cdBd062E3b184A3853bc9539C961'),
+            bakeToken: ethers.utils.getAddress('0xBA3a30FFd8a8a18C90b275FC7fE2F8EFd77F30Ce'),
             wsgb: ethers.utils.getAddress('0x02f0826ef6aD107Cfc861152B32B52fD11BaB9ED'),
             // NFT contracts for bonus checking
             sToadz: ethers.utils.getAddress('0x35afb6ba51839dedd33140a3b704b39933d1e642'),
@@ -1125,16 +1125,22 @@
         };
         
         const BAKEPOOL_ABI = [
-            'function addLiquidity(uint256 bakeAmount, uint8 lockTier) external payable',
-            'function removeLiquidity() external',
-            'function reserveWSGB() external view returns (uint256)',
-            'function reserveBAKE() external view returns (uint256)',
-            'function totalLPTokens() external view returns (uint256)',
-            'function getLPInfo(address user) external view returns (uint256 lpTokens, uint256 sgbValue, uint256 bakeValue, uint256 lockEnd, uint8 lockTier)',
-            'function getNFTBonus(address user) external view returns (uint256)',
-            'function calculateBakeForSGB(uint256 sgbAmount) external view returns (uint256)',
-            'function lpBalances(address) external view returns (uint256)',
-            'event LiquidityAdded(address indexed provider, uint256 sgbAmount, uint256 bakeAmount, uint256 lpTokens)'
+            "function swapSGBforBAKE() payable returns (uint256)",
+            "function swapBAKEforSGB(uint256 bakeAmount) returns (uint256)",
+            "function addLiquidity(uint256 bakeAmount, uint256 lockTier) payable returns (uint256)",
+            "function removeLiquidity() external",
+            "function relock(uint256 newTier) external",
+            "function claimBAKE() external",
+            "function claimSGB() external",
+            "function getPrice() view returns (uint256)",
+            "function reserveWSGB() view returns (uint256)",
+            "function reserveBAKE() view returns (uint256)",
+            "function getLPInfo(address user) view returns (uint256 sgbDeposited, uint256 bakeDeposited, uint256 weightedShares, uint256 poolPercent, uint256 lockTier, uint256 lockExpires, uint256 multiplier, uint256 pendingBAKE, uint256 pendingSGB, uint256 claimableSGB, uint256 timeUntilSGBClaim)",
+            "function getPoolStats() view returns (uint256 totalSGB, uint256 totalBAKE, uint256 tvlUSD, uint256 totalLPs, uint256 currentAPY)",
+            "function getNFTBonus(address user) view returns (uint256)",
+            "function getTotalMultiplier(address user, uint256 tier) view returns (uint256)",
+            "function getBAKEOut(uint256 sgbIn) view returns (uint256)",
+            "function getSGBOut(uint256 bakeIn) view returns (uint256)"
         ];
         
         const ERC20_ABI = [
@@ -1208,16 +1214,18 @@
             try {
                 const poolContract = new ethers.Contract(CONTRACTS.bakePool, BAKEPOOL_ABI, readProvider);
                 
-                const [reserveSGB, reserveBAKE, totalLP] = await Promise.all([
+                const [poolStats, reserveSGB, reserveBAKE] = await Promise.all([
+                    poolContract.getPoolStats(),
                     poolContract.reserveWSGB(),
-                    poolContract.reserveBAKE(),
-                    poolContract.totalLPTokens()
+                    poolContract.reserveBAKE()
                 ]);
                 
                 poolData = {
                     reserveSGB: parseFloat(ethers.utils.formatEther(reserveSGB)),
                     reserveBAKE: parseFloat(ethers.utils.formatEther(reserveBAKE)),
-                    totalLP: parseFloat(ethers.utils.formatEther(totalLP))
+                    tvlUSD: parseFloat(ethers.utils.formatEther(poolStats.tvlUSD)),
+                    totalLPs: poolStats.totalLPs.toNumber(),
+                    currentAPY: poolStats.currentAPY.toNumber()
                 };
                 
                 updatePoolDisplay();
@@ -1228,14 +1236,13 @@
         
         function updatePoolDisplay() {
             const sgbPrice = 0.012; // Approximate SGB price in USD
-            const tvl = poolData.reserveSGB * sgbPrice * 2; // Both sides of pool
             const bakePrice = poolData.reserveSGB > 0 && poolData.reserveBAKE > 0 
                 ? (poolData.reserveSGB / poolData.reserveBAKE) * sgbPrice 
                 : 0;
             const ratio = poolData.reserveSGB > 0 ? (poolData.reserveBAKE / poolData.reserveSGB).toFixed(0) : 0;
             
             document.getElementById('bakePrice').textContent = '$' + bakePrice.toFixed(8);
-            document.getElementById('tvlDisplay').textContent = '$' + formatNumber(tvl);
+            document.getElementById('tvlDisplay').textContent = '$' + formatNumber(poolData.tvlUSD || 0);
             document.getElementById('poolRatio').textContent = ratio;
         }
         
@@ -1332,12 +1339,22 @@
             walletAddress.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
             
             // Get balances
-            const sgbBal = await provider.getBalance(userAddress);
-            const bakeContract = new ethers.Contract(CONTRACTS.bakeToken, ERC20_ABI, provider);
-            const bakeBal = await bakeContract.balanceOf(userAddress);
+            try {
+                const sgbBal = await provider.getBalance(userAddress);
+                sgbBalance.textContent = parseFloat(ethers.utils.formatEther(sgbBal)).toFixed(2);
+            } catch (err) {
+                console.error('Failed to get SGB balance:', err);
+                sgbBalance.textContent = '?';
+            }
             
-            sgbBalance.textContent = parseFloat(ethers.utils.formatEther(sgbBal)).toFixed(2);
-            bakeBalance.textContent = formatNumber(parseFloat(ethers.utils.formatEther(bakeBal)));
+            try {
+                const bakeContract = new ethers.Contract(CONTRACTS.bakeToken, ERC20_ABI, provider);
+                const bakeBal = await bakeContract.balanceOf(userAddress);
+                bakeBalance.textContent = formatNumber(parseFloat(ethers.utils.formatEther(bakeBal)));
+            } catch (err) {
+                console.error('Failed to get BAKE balance:', err);
+                bakeBalance.textContent = '?';
+            }
         }
         
         // ==================== USER POSITION ====================
@@ -1352,23 +1369,28 @@
                     poolContract.getNFTBonus(userAddress)
                 ]);
                 
-                const lpTokens = parseFloat(ethers.utils.formatEther(lpInfo.lpTokens));
-                const sgbValue = parseFloat(ethers.utils.formatEther(lpInfo.sgbValue));
-                const bakeValue = parseFloat(ethers.utils.formatEther(lpInfo.bakeValue));
-                const lockEnd = lpInfo.lockEnd.toNumber();
+                // getLPInfo returns: sgbDeposited, bakeDeposited, weightedShares, poolPercent, lockTier, lockExpires, multiplier, pendingBAKE, pendingSGB, claimableSGB, timeUntilSGBClaim
+                const sgbDeposited = parseFloat(ethers.utils.formatEther(lpInfo.sgbDeposited));
+                const bakeDeposited = parseFloat(ethers.utils.formatEther(lpInfo.bakeDeposited));
+                const poolPercent = parseFloat(ethers.utils.formatEther(lpInfo.poolPercent)) * 100;
+                const lockExpires = lpInfo.lockExpires.toNumber();
+                const lockTier = lpInfo.lockTier.toNumber();
+                const multiplier = lpInfo.multiplier.toNumber();
+                const pendingBAKE = parseFloat(ethers.utils.formatEther(lpInfo.pendingBAKE));
+                const pendingSGB = parseFloat(ethers.utils.formatEther(lpInfo.pendingSGB));
                 const bonus = nftBonus.toNumber();
                 
-                if (lpTokens > 0) {
+                if (sgbDeposited > 0 || bakeDeposited > 0) {
                     positionPanel.classList.add('has-position');
                     
-                    document.getElementById('posLpTokens').textContent = formatNumber(lpTokens);
-                    document.getElementById('posSgbValue').textContent = formatNumber(sgbValue) + ' SGB';
-                    document.getElementById('posBakeValue').textContent = formatNumber(bakeValue) + ' BAKE';
+                    document.getElementById('posLpTokens').textContent = poolPercent.toFixed(4) + '%';
+                    document.getElementById('posSgbValue').textContent = formatNumber(sgbDeposited) + ' SGB';
+                    document.getElementById('posBakeValue').textContent = formatNumber(bakeDeposited) + ' BAKE';
                     
                     // Calculate unlock time
                     const now = Math.floor(Date.now() / 1000);
-                    if (lockEnd > now) {
-                        const daysLeft = Math.ceil((lockEnd - now) / 86400);
+                    if (lockExpires > now) {
+                        const daysLeft = Math.ceil((lockExpires - now) / 86400);
                         document.getElementById('posUnlockTime').textContent = daysLeft + ' days';
                         withdrawBtn.disabled = true;
                         withdrawBtn.textContent = '🔒 Locked - ' + daysLeft + ' days remaining';
@@ -1386,8 +1408,8 @@
                         document.getElementById('nftBonusInfo').classList.remove('active');
                     }
                     
-                    // TODO: Calculate rewards based on time in pool
-                    document.getElementById('posRewards').textContent = '0 BAKE';
+                    // Pending rewards
+                    document.getElementById('posRewards').textContent = formatNumber(pendingBAKE) + ' BAKE';
                 } else {
                     positionPanel.classList.remove('has-position');
                 }
