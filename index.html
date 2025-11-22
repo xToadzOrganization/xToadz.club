@@ -1544,7 +1544,8 @@
                 // Calculate proportional BAKE needed based on pool ratio
                 const ratio = poolData.reserveBAKE / poolData.reserveSGB;
                 const bakeNeeded = sgbAmount * ratio;
-                bakeOutput.value = formatNumber(bakeNeeded);
+                // Use plain number for input field, not formatted string
+                bakeOutput.value = bakeNeeded.toFixed(2);
             } else {
                 bakeOutput.value = '';
             }
