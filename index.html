@@ -971,8 +971,8 @@
                         <div class="lp-stat-label">BAKE Price</div>
                     </div>
                     <div class="lp-stat">
-                        <div class="lp-stat-value" id="tvlDisplay">$0</div>
-                        <div class="lp-stat-label">TVL</div>
+                        <div class="lp-stat-value" id="marketCap">$0</div>
+                        <div class="lp-stat-label">Market Cap</div>
                     </div>
                     <div class="lp-stat">
                         <div class="lp-stat-value" id="poolRatio">0</div>
@@ -1241,8 +1241,12 @@
                 : 0;
             const ratio = poolData.reserveSGB > 0 ? (poolData.reserveBAKE / poolData.reserveSGB).toFixed(0) : 0;
             
+            // Market cap = price * total supply (11.9B)
+            const totalSupply = 11900000000;
+            const marketCap = bakePrice * totalSupply;
+            
             document.getElementById('bakePrice').textContent = '$' + bakePrice.toFixed(8);
-            document.getElementById('tvlDisplay').textContent = '$' + formatNumber(poolData.tvlUSD || 0);
+            document.getElementById('marketCap').textContent = '$' + formatNumber(marketCap);
             document.getElementById('poolRatio').textContent = ratio;
         }
         
