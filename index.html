@@ -1115,13 +1115,13 @@
         const SONGBIRD_RPC = 'https://songbird-api.flare.network/ext/C/rpc';
         
         const CONTRACTS = {
-            bakePool: '0xAa2D4a6A2821E39CBCa695358DAeDDb4137316C3',
-            bakeToken: '0xBA3a30FFd8a8a18C90b275FC7fE2F8EFd77E30Ce',
-            wsgb: '0x02f0826ef6aD107Cfc861152B32B52fD11BaB9ED',
+            bakePool: ethers.utils.getAddress('0xAa2D4a6A2821E39CBCa695358DAeDDb4137316C3'),
+            bakeToken: ethers.utils.getAddress('0xba3a30ffd8a8a18c90b275fc7fe2f8efd77e30ce'),
+            wsgb: ethers.utils.getAddress('0x02f0826ef6aD107Cfc861152B32B52fD11BaB9ED'),
             // NFT contracts for bonus checking
-            sToadz: '0x35afb6Ba51839dEDD33140A3b704b39933D1e642',
-            songbirdCity: '0x360f8B7d9530F55AB8E52394E6527935635f51E7',
-            luxuryLofts: '0x91Aa85a172DD3e7EEA4ad1A4B33E90cbF3B99ed8'
+            sToadz: ethers.utils.getAddress('0x35afb6ba51839dedd33140a3b704b39933d1e642'),
+            songbirdCity: ethers.utils.getAddress('0x360f8b7d9530f55ab8e52394e6527935635f51e7'),
+            luxuryLofts: ethers.utils.getAddress('0x91aa85a172dd3e7eea4ad1a4b33e90cbf3b99ed8')
         };
         
         const BAKEPOOL_ABI = [
