@@ -784,6 +784,48 @@
             line-height: 1.6;
         }
         
+        /* Docs CTA */
+        .docs-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 78, 59, 0.15));
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            padding: 24px 40px;
+            margin: 40px 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .docs-cta:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 78, 59, 0.25));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+        }
+        
+        .docs-cta-icon {
+            font-size: 28px;
+        }
+        
+        .docs-cta-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(12px, 3vw, 16px);
+            color: #10b981;
+            letter-spacing: 1px;
+        }
+        
+        .docs-cta-arrow {
+            font-size: 24px;
+            color: #10b981;
+            transition: transform 0.3s ease;
+        }
+        
+        .docs-cta:hover .docs-cta-arrow {
+            transform: translateX(4px);
+        }
+        
         /* Footer */
         .footer {
             text-align: center;
@@ -1027,7 +1069,7 @@
                 <div class="feature-title">Aggressive by Design</div>
                 <div class="feature-text">
                     Our LP encourages BAKE to rise like bread. 
-                    The maths math. Grab your moon boots.
+                    The math maths. Ribbit ribbit.
                 </div>
             </div>
             <div class="feature">
@@ -1042,17 +1084,23 @@
                 <div class="feature-icon">🏆</div>
                 <div class="feature-title">Play to Earn</div>
                 <div class="feature-text">
-                    BAKE Arena isn't just a game... it's how tokens circulate. 
+                    BAKE Arena isn't just a game — it's how tokens circulate. 
                     Kill, survive, win the pot.
                 </div>
             </div>
         </div>
         
+        <!-- Docs CTA -->
+        <a href="docs.html" class="docs-cta">
+            <span class="docs-cta-icon">📖</span>
+            <span class="docs-cta-text">Read the Docs</span>
+            <span class="docs-cta-arrow">→</span>
+        </a>
+        
         <footer class="footer">
             <div class="footer-links">
                 <a href="https://x.com/xtoadz" target="_blank" class="footer-link">X</a>
                 <a href="https://discord.gg/xtoadz" target="_blank" class="footer-link">Discord</a>
-                <a href="docs.html" class="footer-link">Docs</a>
             </div>
             <p class="footer-copy">
                 Built by degens, for degens. <span>Songbird Network.</span>
