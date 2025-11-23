@@ -1307,8 +1307,14 @@
                     reserveSGB: parseFloat(ethers.utils.formatEther(reserveSGB)),
                     reservePOND: parseFloat(ethers.utils.formatEther(reservePOND)),
                     // Calculate price from reserves: POND price in SGB
-                    pondPrice: poolData.reserveSGB > 0 && poolData.reservePOND > 0 ? 
-                        parseFloat(ethers.utils.formatEther(reserveSGB)) / parseFloat(ethers.utils.formatEther(reservePOND)) : 0,
+                    const sgbRes = parseFloat(ethers.utils.formatEther(reserveSGB));
+const pondRes = parseFloat(ethers.utils.formatEther(reservePOND));
+
+poolData = {
+    reserveSGB: sgbRes,
+    reservePOND: pondRes,
+    pondPrice: (sgbRes > 0 && pondRes > 0) ? (sgbRes / pondRes) : 0
+};
                     tvlUSD: parseFloat(ethers.utils.formatEther(totalTVL)),
                     totalLPs: 0,
                     currentAPY: 0
