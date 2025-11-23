@@ -1126,8 +1126,8 @@
                 <div class="feature-icon">📈</div>
                 <div class="feature-title">Aggressive by Design</div>
                 <div class="feature-text">
-                    Our LP encourages POND to rise like bread. 
-                    The math maths. Ribbit ribbit.
+                    Our LP encourages POND to rise like a biblical flood. 
+                    The maths math. Hop in.
                 </div>
             </div>
             <div class="feature">
@@ -1173,33 +1173,30 @@
         const SONGBIRD_RPC = 'https://songbird-api.flare.network/ext/C/rpc';
         
         const CONTRACTS = {
-            pondPool: ethers.utils.getAddress('0xA14Cb45b30779EA49D604764C5b74A2a1A7a0321'),
+            pondPool: ethers.utils.getAddress('0x4A1975d708F713DBD3fFF3C7B6afB289a23A49Ca'),
             pondToken: ethers.utils.getAddress('0x39fec3F97668e393862Dbb3C442f3Dd3d5016D69'),
             wsgb: ethers.utils.getAddress('0x02f0826ef6aD107Cfc861152B32B52fD11BaB9ED'),
-            // NFT contracts for bonus checking
             sToadz: ethers.utils.getAddress('0x35afb6ba51839dedd33140a3b704b39933d1e642'),
             songbirdCity: ethers.utils.getAddress('0x360f8b7d9530f55ab8e52394e6527935635f51e7'),
             luxuryLofts: ethers.utils.getAddress('0x91aa85a172dd3e7eea4ad1a4b33e90cbf3b99ed8')
         };
         
         const PONDPOOL_ABI = [
-            "function swapSGBforPOND() payable returns (uint256)",
-            "function swapPONDforSGB(uint256 pondAmount) returns (uint256)",
+            "function swapSgbForPond() payable returns (uint256)",
+            "function swapPondForSgb(uint256 pondAmount) returns (uint256)",
             "function addLiquidity(uint256 pondAmount, uint256 lockTier) payable returns (uint256)",
             "function addMore(uint256 pondAmount) payable returns (uint256)",
             "function removeLiquidity() external",
-            "function relock(uint256 newTier) external",
-            "function claimPOND() external",
-            "function claimSGB() external",
-            "function getPrice() view returns (uint256)",
-            "function reserveWSGB() view returns (uint256)",
-            "function reservePOND() view returns (uint256)",
-            "function getLPInfo(address user) view returns (uint256 sgbDeposited, uint256 pondDeposited, uint256 weightedShares, uint256 poolPercent, uint256 lockTier, uint256 lockExpires, uint256 multiplier, uint256 pendingPOND, uint256 pendingSGB, uint256 claimableSGB, uint256 timeUntilSGBClaim)",
-            "function getPoolStats() view returns (uint256 totalSGB, uint256 totalPOND, uint256 tvlUSD, uint256 totalLPs, uint256 currentAPY)",
-            "function getNFTBonus(address user) view returns (uint256)",
-            "function getTotalMultiplier(address user, uint256 tier) view returns (uint256)",
-            "function getPONDOut(uint256 sgbIn) view returns (uint256)",
-            "function getSGBOut(uint256 pondIn) view returns (uint256)"
+            "function claimPondRewards() external",
+            "function claimSgbRewards() external",
+            "function reserveSGB() external view returns (uint256)",
+            "function reservePOND() external view returns (uint256)",
+            "function getUserInfo(address user) external view returns (tuple(uint256 sgbAmount, uint256 pondAmount, uint256 lpShares, uint256 weightedShares, uint256 lockTier, uint256 unlockTime, uint256 lastClaimTime))",
+            "function getPondOut(uint256 sgbIn) view returns (uint256)",
+            "function getSgbOut(uint256 pondIn) view returns (uint256)",
+            "function getStakedNFTBonus(address user) view returns (uint256)",
+            "function getWalletNFTBonus(address user) view returns (uint256)",
+            "function lpClaimableSgb(address user) view returns (uint256)"
         ];
         
         const ERC20_ABI = [
@@ -1218,9 +1215,9 @@
         let userAddress = null;
         let isConnected = false;
         let selectedLockTier = 0;
-        let poolData = { reserveSGB: 0, reservePOND: 0, totalLP: 0 };
-        let sgbPriceUSD = 0.0027; // Default fallback
-        let userHasPosition = false; // Track if user already has LP position
+        let poolData = { reserveSGB: 0, reservePOND: 0, pondPrice: 0 };
+        let sgbPriceUSD = 0.0027;
+        let userHasPosition = false;
         
         // ==================== FETCH SGB PRICE ====================
         async function fetchSGBPrice() {
@@ -1253,14 +1250,10 @@
         
         // ==================== INITIALIZATION ====================
         async function init() {
-            // Fetch SGB price first
             await fetchSGBPrice();
-            
-            // Setup read-only provider for pool data
             const readProvider = new ethers.providers.JsonRpcProvider(SONGBIRD_RPC);
             await loadPoolData(readProvider);
             
-            // Setup lock tier buttons
             document.querySelectorAll('.lock-tier-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.lock-tier-btn').forEach(b => b.classList.remove('active'));
@@ -1269,28 +1262,17 @@
                 });
             });
             
-            // Setup input listener
             sgbInput.addEventListener('input', calculatePondOutput);
-            
-            // Setup max button
             maxBtn.addEventListener('click', setMaxSGB);
-            
-            // Setup main button
             lpBtn.addEventListener('click', handleMainButton);
-            
-            // Setup withdraw button
             withdrawBtn.addEventListener('click', handleWithdraw);
-            
-            // Setup claim buttons
             claimPondBtn.addEventListener('click', handleClaimPond);
             claimSgbBtn.addEventListener('click', handleClaimSgb);
             
-            // Check if already connected
             if (window.ethereum && window.ethereum.selectedAddress) {
                 await connectWallet();
             }
             
-            // Refresh pool data every 30 seconds, price every 60 seconds
             setInterval(() => loadPoolData(new ethers.providers.JsonRpcProvider(SONGBIRD_RPC)), 30000);
             setInterval(fetchSGBPrice, 60000);
         }
@@ -1321,12 +1303,9 @@
         }
         
         function updatePoolDisplay() {
-            // Use price directly from contract (SGB per POND)
             const pondPrice = poolData.pondPrice || 0;
             const pondPriceUSD = pondPrice * sgbPriceUSD;
             const ratio = poolData.reserveSGB > 0 ? (poolData.reservePOND / poolData.reserveSGB).toFixed(0) : 0;
-            
-            // Market cap = price * total supply (11.9B)
             const totalSupply = 11900000000;
             const marketCap = pondPriceUSD * totalSupply;
             
@@ -1346,27 +1325,21 @@
                 lpBtn.classList.add('loading');
                 lpBtn.textContent = 'Connecting...';
                 
-                // Request accounts
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
                 
-                // Check network
                 const chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 if (parseInt(chainId, 16) !== SONGBIRD_CHAIN_ID) {
                     await switchToSongbird();
                 }
                 
-                // Setup provider and signer
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
-                
                 isConnected = true;
                 
-                // Update UI
                 await updateWalletUI();
                 await loadUserPosition();
                 
-                // Listen for account/network changes
                 window.ethereum.on('accountsChanged', handleAccountChange);
                 window.ethereum.on('chainChanged', () => window.location.reload());
                 
@@ -1429,7 +1402,6 @@
             walletInfo.classList.add('connected');
             walletAddress.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
             
-            // Get balances
             try {
                 const sgbBal = await provider.getBalance(userAddress);
                 sgbBalance.textContent = parseFloat(ethers.utils.formatEther(sgbBal)).toFixed(2);
@@ -1455,37 +1427,24 @@
             try {
                 const poolContract = new ethers.Contract(CONTRACTS.pondPool, PONDPOOL_ABI, provider);
                 
-                const [lpInfo, nftBonus] = await Promise.all([
-                    poolContract.getLPInfo(userAddress),
-                    poolContract.getNFTBonus(userAddress)
-                ]);
+                const userInfo = await poolContract.getUserInfo(userAddress);
+                const sgbAmount = parseFloat(ethers.utils.formatEther(userInfo.sgbAmount));
+                const pondAmount = parseFloat(ethers.utils.formatEther(userInfo.pondAmount));
+                const lpShares = parseFloat(ethers.utils.formatEther(userInfo.lpShares));
+                const unlockTime = userInfo.unlockTime.toNumber();
                 
-                // getLPInfo returns: sgbDeposited, pondDeposited, weightedShares, poolPercent, lockTier, lockExpires, multiplier, pendingPOND, pendingSGB, claimableSGB, timeUntilSGBClaim
-                const sgbDeposited = parseFloat(ethers.utils.formatEther(lpInfo.sgbDeposited));
-                const pondDeposited = parseFloat(ethers.utils.formatEther(lpInfo.pondDeposited));
-                // poolPercent is basis points (10000 = 100%), divide by 100 to get percentage
-                const poolPercent = lpInfo.poolPercent.toNumber() / 100;
-                const lockExpires = lpInfo.lockExpires.toNumber();
-                const lockTier = lpInfo.lockTier.toNumber();
-                const multiplier = lpInfo.multiplier.toNumber();
-                const pendingPOND = parseFloat(ethers.utils.formatEther(lpInfo.pendingPOND));
-                const pendingSGB = parseFloat(ethers.utils.formatEther(lpInfo.pendingSGB));
-                const claimableSGB = parseFloat(ethers.utils.formatEther(lpInfo.claimableSGB));
-                const bonus = nftBonus.toNumber();
-                
-                if (sgbDeposited > 0 || pondDeposited > 0) {
+                if (sgbAmount > 0 || pondAmount > 0) {
                     userHasPosition = true;
                     positionPanel.classList.add('has-position');
-                    lockTiers.classList.add('hidden'); // Hide tier selection for existing LPs
+                    lockTiers.classList.add('hidden');
                     
-                    document.getElementById('posLpTokens').textContent = poolPercent.toFixed(2) + '%';
-                    document.getElementById('posSgbValue').textContent = formatNumber(sgbDeposited) + ' SGB';
-                    document.getElementById('posPondValue').textContent = formatNumber(pondDeposited) + ' POND';
+                    document.getElementById('posLpTokens').textContent = formatNumber(lpShares);
+                    document.getElementById('posSgbValue').textContent = formatNumber(sgbAmount) + ' SGB';
+                    document.getElementById('posPondValue').textContent = formatNumber(pondAmount) + ' POND';
                     
-                    // Calculate unlock time
                     const now = Math.floor(Date.now() / 1000);
-                    if (lockExpires > now) {
-                        const daysLeft = Math.ceil((lockExpires - now) / 86400);
+                    if (unlockTime > now) {
+                        const daysLeft = Math.ceil((unlockTime - now) / 86400);
                         document.getElementById('posUnlockTime').textContent = daysLeft + ' days';
                         withdrawBtn.disabled = true;
                         withdrawBtn.textContent = '🔒 Locked - ' + daysLeft + ' days remaining';
@@ -1495,30 +1454,16 @@
                         withdrawBtn.textContent = '🔓 Withdraw Liquidity';
                     }
                     
-                    // NFT bonus
-                    if (bonus > 0) {
-                        document.getElementById('nftBonusInfo').classList.add('active');
-                        document.getElementById('nftBonusValue').textContent = '+' + bonus + '%';
-                    } else {
-                        document.getElementById('nftBonusInfo').classList.remove('active');
-                    }
+                    const claimableSgb = parseFloat(ethers.utils.formatEther(await poolContract.lpClaimableSgb(userAddress)));
+                    document.getElementById('posPondRewards').textContent = '0 POND';
+                    document.getElementById('posSgbRewards').textContent = formatNumber(claimableSgb) + ' SGB';
                     
-                    // Pending rewards - show both POND and SGB
-                    document.getElementById('posPondRewards').textContent = formatNumber(pendingPOND) + ' POND';
-                    document.getElementById('posSgbRewards').textContent = formatNumber(claimableSGB) + ' SGB';
+                    claimPondBtn.disabled = true;
+                    claimPondBtn.textContent = 'No POND to Claim';
                     
-                    // Enable/disable claim buttons based on available rewards
-                    if (pendingPOND > 0) {
-                        claimPondBtn.disabled = false;
-                        claimPondBtn.textContent = 'Claim ' + formatNumber(pendingPOND) + ' POND';
-                    } else {
-                        claimPondBtn.disabled = true;
-                        claimPondBtn.textContent = 'No POND to Claim';
-                    }
-                    
-                    if (claimableSGB > 0) {
+                    if (claimableSgb > 0) {
                         claimSgbBtn.disabled = false;
-                        claimSgbBtn.textContent = 'Claim ' + formatNumber(claimableSGB) + ' SGB';
+                        claimSgbBtn.textContent = 'Claim ' + formatNumber(claimableSgb) + ' SGB';
                     } else {
                         claimSgbBtn.disabled = true;
                         claimSgbBtn.textContent = 'No SGB to Claim';
@@ -1526,7 +1471,7 @@
                 } else {
                     userHasPosition = false;
                     positionPanel.classList.remove('has-position');
-                    lockTiers.classList.remove('hidden'); // Show tier selection for new LPs
+                    lockTiers.classList.remove('hidden');
                 }
                 
                 updateButtonState();
@@ -1540,10 +1485,8 @@
             const sgbAmount = parseFloat(sgbInput.value) || 0;
             
             if (sgbAmount > 0 && poolData.reserveSGB > 0 && poolData.reservePOND > 0) {
-                // Calculate proportional POND needed based on pool ratio
                 const ratio = poolData.reservePOND / poolData.reserveSGB;
-                const pondNeeded = sgbAmount * ratio;
-                // Use plain number for input field, not formatted string
+                const pondNeeded = sgbAmount * ratio * 0.5;
                 pondOutput.value = pondNeeded.toFixed(2);
             } else {
                 pondOutput.value = '';
@@ -1552,7 +1495,7 @@
         
         function setMaxSGB() {
             if (!isConnected) return;
-            const maxSGB = parseFloat(sgbBalance.textContent) - 0.5; // Leave some for gas
+            const maxSGB = parseFloat(sgbBalance.textContent) - 0.5;
             sgbInput.value = Math.max(0, maxSGB).toFixed(2);
             calculatePondOutput();
         }
@@ -1563,8 +1506,6 @@
                 await connectWallet();
                 return;
             }
-            
-            // If connected, deposit
             await deposit();
         }
         
@@ -1582,12 +1523,10 @@
                 const poolContract = new ethers.Contract(CONTRACTS.pondPool, PONDPOOL_ABI, signer);
                 const pondContract = new ethers.Contract(CONTRACTS.pondToken, ERC20_ABI, signer);
                 
-                // Calculate POND amount needed
                 const sgbWei = ethers.utils.parseEther(sgbAmount.toString());
                 const ratio = poolData.reservePOND / poolData.reserveSGB;
-                const pondNeeded = ethers.utils.parseEther((sgbAmount * ratio).toString());
+                const pondNeeded = ethers.utils.parseEther((sgbAmount * ratio * 0.5).toString());
                 
-                // Check POND allowance
                 const allowance = await pondContract.allowance(userAddress, CONTRACTS.pondPool);
                 if (allowance.lt(pondNeeded)) {
                     const approveTx = await pondContract.approve(CONTRACTS.pondPool, ethers.constants.MaxUint256);
@@ -1598,22 +1537,14 @@
                 
                 let tx;
                 if (userHasPosition) {
-                    // User already has LP position - use addMore()
-                    tx = await poolContract.addMore(pondNeeded, {
-                        value: sgbWei
-                    });
+                    tx = await poolContract.addMore(pondNeeded, { value: sgbWei });
                 } else {
-                    // New LP - use addLiquidity() with lock tier
-                    tx = await poolContract.addLiquidity(pondNeeded, selectedLockTier, {
-                        value: sgbWei
-                    });
+                    tx = await poolContract.addLiquidity(pondNeeded, selectedLockTier, { value: sgbWei });
                 }
                 
                 await tx.wait();
-                
                 alert('Deposit successful!');
                 
-                // Refresh data
                 sgbInput.value = '';
                 pondOutput.value = '';
                 await updateWalletUI();
@@ -1641,7 +1572,6 @@
                 await tx.wait();
                 
                 alert('Withdrawal successful!');
-                
                 await updateWalletUI();
                 await loadUserPosition();
                 await loadPoolData(provider);
@@ -1650,7 +1580,7 @@
                 console.error('Withdraw failed:', err);
                 alert('Withdraw failed: ' + (err.reason || err.message));
             } finally {
-                await loadUserPosition(); // Reset button state
+                await loadUserPosition();
             }
         }
         
@@ -1662,11 +1592,10 @@
                 claimPondBtn.textContent = 'Claiming...';
                 
                 const poolContract = new ethers.Contract(CONTRACTS.pondPool, PONDPOOL_ABI, signer);
-                const tx = await poolContract.claimPOND();
+                const tx = await poolContract.claimPondRewards();
                 await tx.wait();
                 
                 alert('POND claimed!');
-                
                 await updateWalletUI();
                 await loadUserPosition();
                 
@@ -1685,11 +1614,10 @@
                 claimSgbBtn.textContent = 'Claiming...';
                 
                 const poolContract = new ethers.Contract(CONTRACTS.pondPool, PONDPOOL_ABI, signer);
-                const tx = await poolContract.claimSGB();
+                const tx = await poolContract.claimSgbRewards();
                 await tx.wait();
                 
                 alert('SGB claimed!');
-                
                 await updateWalletUI();
                 await loadUserPosition();
                 
