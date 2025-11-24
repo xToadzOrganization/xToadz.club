@@ -905,6 +905,76 @@
         .footer-copy span {
             color: #10b981;
         }
+        /* Custom Modal */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal {
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f1a2a 100%);
+            border: 1px solid #10b981;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .custom-modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+        .custom-modal-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .custom-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        .custom-modal-message {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .custom-modal-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .custom-modal-btn:hover {
+            transform: scale(1.05);
+        }
+        .custom-modal.error .custom-modal-title {
+            color: #ef4444;
+        }
+        .custom-modal.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1317,7 +1387,7 @@
         // ==================== WALLET CONNECTION ====================
         async function connectWallet() {
             if (!window.ethereum) {
-                alert('Please install MetaMask or another Web3 wallet');
+                showModal('Please install MetaMask or another Web3 wallet', 'error');
                 return;
             }
             
@@ -1345,7 +1415,7 @@
                 
             } catch (err) {
                 console.error('Connection failed:', err);
-                alert('Failed to connect: ' + err.message);
+                showModal('Failed to connect: ' + err.message, 'error');
             } finally {
                 lpBtn.classList.remove('loading');
                 updateButtonState();
@@ -1526,7 +1596,7 @@
             const sgbAmount = parseFloat(sgbInput.value) || 0;
             const pondAmount = parseFloat(pondOutput.value) || 0;
             if (sgbAmount <= 0) {
-                alert('Please enter an amount');
+                showModal('Please enter an amount', 'warning');
                 return;
             }
             
@@ -1546,7 +1616,7 @@
                 } else {
                     // First depositor - use manual input
                     if (pondAmount <= 0) {
-                        alert('Please enter POND amount for first deposit');
+                        showModal('Please enter POND amount for first deposit', 'warning');
                         lpBtn.classList.remove('loading');
                         updateButtonState();
                         return;
@@ -1570,7 +1640,7 @@
                 }
                 
                 await tx.wait();
-                alert('Deposit successful!');
+                showModal('Deposit successful!');
                 
                 sgbInput.value = '';
                 pondOutput.value = '';
@@ -1580,7 +1650,7 @@
                 
             } catch (err) {
                 console.error('Deposit failed:', err);
-                alert('Deposit failed: ' + (err.reason || err.message));
+                showModal('Deposit failed: ' + (err.reason || err.message), 'error');
             } finally {
                 lpBtn.classList.remove('loading');
                 updateButtonState();
@@ -1598,14 +1668,14 @@
                 const tx = await poolContract.removeLiquidity();
                 await tx.wait();
                 
-                alert('Withdrawal successful!');
+                showModal('Withdrawal successful!');
                 await updateWalletUI();
                 await loadUserPosition();
                 await loadPoolData(provider);
                 
             } catch (err) {
                 console.error('Withdraw failed:', err);
-                alert('Withdraw failed: ' + (err.reason || err.message));
+                showModal('Withdraw failed: ' + (err.reason || err.message), 'error');
             } finally {
                 await loadUserPosition();
             }
@@ -1622,13 +1692,13 @@
                 const tx = await poolContract.claimPondRewards();
                 await tx.wait();
                 
-                alert('POND claimed!');
+                showModal('POND claimed!');
                 await updateWalletUI();
                 await loadUserPosition();
                 
             } catch (err) {
                 console.error('Claim POND failed:', err);
-                alert('Claim failed: ' + (err.reason || err.message));
+                showModal('Claim failed: ' + (err.reason || err.message), 'error');
                 await loadUserPosition();
             }
         }
@@ -1644,13 +1714,13 @@
                 const tx = await poolContract.claimSgbRewards();
                 await tx.wait();
                 
-                alert('SGB claimed!');
+                showModal('SGB claimed!');
                 await updateWalletUI();
                 await loadUserPosition();
                 
             } catch (err) {
                 console.error('Claim SGB failed:', err);
-                alert('Claim failed: ' + (err.reason || err.message));
+                showModal('Claim failed: ' + (err.reason || err.message), 'error');
                 await loadUserPosition();
             }
         }
@@ -1754,15 +1824,59 @@
                         window.open('https://toadz.gg', '_blank');
                     }
                 } else if (name === '???') {
-                    alert('👀 Something big is coming...');
+                    showModal('👀 Something big is coming...', 'warning');
                 } else {
-                    alert(name + ' coming soon!');
+                    showModal(name + ' coming soon!', 'warning');
                 }
             });
         });
         
         // ==================== INIT ====================
         init();
+    </script>
+    <!-- Custom Modal -->
+    <div class="custom-modal-overlay" id="customModal">
+        <div class="custom-modal" id="modalContent">
+            <div class="custom-modal-icon" id="modalIcon">✅</div>
+            <div class="custom-modal-title" id="modalTitle">Success</div>
+            <div class="custom-modal-message" id="modalMessage">Operation completed successfully.</div>
+            <button class="custom-modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+    
+    <script>
+        function showModal(message, type = 'success') {
+            const overlay = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const msg = document.getElementById('modalMessage');
+            
+            if (type === 'error') {
+                icon.textContent = '❌';
+                title.textContent = 'Error';
+                content.classList.add('error');
+            } else if (type === 'warning') {
+                icon.textContent = '⚠️';
+                title.textContent = 'Notice';
+                content.classList.remove('error');
+            } else {
+                icon.textContent = '✅';
+                title.textContent = 'Success';
+                content.classList.remove('error');
+            }
+            
+            msg.textContent = message;
+            overlay.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+        
+        document.getElementById('customModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
     </script>
 </body>
 </html>
