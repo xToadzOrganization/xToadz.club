@@ -83,12 +83,12 @@
         
         .header {
             text-align: center;
-            padding: 40px 20px;
+            padding: 24px 20px;
         }
         
         .logo {
             font-family: 'Press Start 2P', cursive;
-            font-size: clamp(32px, 8vw, 64px);
+            font-size: clamp(28px, 7vw, 56px);
             background: linear-gradient(135deg, #10b981, #34d399, #6ee7b7, #10b981);
             background-size: 300% 300%;
             -webkit-background-clip: text;
@@ -96,7 +96,7 @@
             background-clip: text;
             animation: shimmer 3s ease infinite;
             text-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         
         @keyframes shimmer {
@@ -157,7 +157,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 50px;
         }
         
         .product-card {
@@ -169,7 +169,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
         }
         
         .product-card.phase-2-card {
@@ -184,21 +183,6 @@
         
         .product-card.mystery {
             border-style: dashed;
-        }
-        
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .product-card:hover::before {
-            left: 100%;
         }
         
         .product-card:hover {
@@ -240,17 +224,34 @@
         
         /* NFT Carousel */
         .nft-section {
-            margin: 50px 0;
+            margin: 30px 0 20px 0;
             overflow: hidden;
         }
         
         .nft-section-title {
             font-family: 'Press Start 2P', cursive;
-            font-size: clamp(10px, 2vw, 12px);
-            color: #64748b;
+            font-size: clamp(10px, 2vw, 14px);
+            color: #10b981;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             letter-spacing: 2px;
+        }
+        
+        .carousel-placeholder {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            padding: 40px;
+        }
+        
+        .scroll-in {
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-in.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
         
         .nft-carousel {
@@ -944,6 +945,12 @@
             font-size: 48px;
             margin-bottom: 15px;
         }
+        .custom-modal-icon.coming-soon {
+            font-size: 40px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .custom-modal-title {
             font-size: 20px;
             font-weight: 700;
@@ -975,6 +982,13 @@
             border-color: #ef4444;
             box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
         }
+        .custom-modal.coming-soon .custom-modal-title {
+            color: #10b981;
+        }
+        .custom-modal.coming-soon {
+            border-color: #10b981;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -983,146 +997,155 @@
     <!-- Particles - varied sizes and opacities -->
     <!-- Small (subtle) -->
     <div class="particle small" style="left: 5%; animation-delay: 0s;"></div>
-    <div class="particle small" style="left: 15%; animation-delay: 3s;"></div>
     <div class="particle small" style="left: 35%; animation-delay: 7s;"></div>
-    <div class="particle small" style="left: 55%; animation-delay: 2s;"></div>
     <div class="particle small" style="left: 75%; animation-delay: 5s;"></div>
     <div class="particle small" style="left: 95%; animation-delay: 1s;"></div>
     <!-- Medium -->
     <div class="particle medium" style="left: 10%; animation-delay: 1s;"></div>
-    <div class="particle medium" style="left: 25%; animation-delay: 4s;"></div>
     <div class="particle medium" style="left: 45%; animation-delay: 0s;"></div>
-    <div class="particle medium" style="left: 60%; animation-delay: 6s;"></div>
     <div class="particle medium" style="left: 85%; animation-delay: 2.5s;"></div>
     <!-- Large (prominent) -->
     <div class="particle large" style="left: 20%; animation-delay: 2s;"></div>
-    <div class="particle large" style="left: 50%; animation-delay: 5s;"></div>
     <div class="particle large" style="left: 70%; animation-delay: 0.5s;"></div>
-    <div class="particle large" style="left: 90%; animation-delay: 4s;"></div>
     
     <div class="container">
         <header class="header">
             <h1 class="logo">xToadz</h1>
-            <p class="tagline">Hop in. <span>Build wealth.</span> Have fun.</p>
+            <p class="hero-statement">The Songbird DeFi Ecosystem</p>
+            <p class="hero-sub">Real utility. Real products. Real value.</p>
         </header>
         
-        <!-- Phase 1 -->
-        <div class="phase-section">
-            <div class="phase-title">// PHASE 1 — LIVE</div>
-            <div class="products-grid">
-                <div class="product-card">
-                    <div class="product-icon">🖼️</div>
-                    <div class="product-name">Marketplace</div>
-                    <div class="product-status live">● Live</div>
-                </div>
-                <div class="product-card">
-                    <div class="product-icon">🎮</div>
-                    <div class="product-name">Toadz Arena</div>
-                    <div class="product-status live">● Live</div>
-                </div>
+        <!-- Stats Section -->
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-value">30,000</div>
+                <div class="stat-label">NFTs Minted</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">11.9B</div>
+                <div class="stat-label">POND Supply</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Live Products</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">∞</div>
+                <div class="stat-label">Potential</div>
             </div>
         </div>
         
-        <!-- Phase 2 -->
-        <div class="phase-section">
-            <div class="phase-title phase-2">// PHASE 2 — BUILDING</div>
-            <div class="products-grid">
-                <div class="product-card phase-2-card">
-                    <div class="product-icon">🚀</div>
-                    <div class="product-name">Memepad</div>
-                    <div class="product-status soon">Phase 2</div>
-                </div>
-                <div class="product-card phase-2-card">
-                    <div class="product-icon">📱</div>
-                    <div class="product-name">Social Tool</div>
-                    <div class="product-status soon">Phase 2</div>
-                </div>
-                <div class="product-card phase-2-card mystery">
-                    <div class="product-icon">❓</div>
-                    <div class="product-name">???</div>
-                    <div class="product-status soon">Phase 2</div>
-                </div>
-            </div>
-        </div>
+        <style>
+            .hero-statement {
+                font-size: clamp(24px, 5vw, 42px);
+                font-weight: 700;
+                background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 8px;
+                letter-spacing: 1px;
+            }
+            .hero-sub {
+                color: #94a3b8;
+                font-size: 14px;
+                margin-bottom: 24px;
+            }
+            .stats-row {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+            }
+            .stat-box {
+                background: rgba(16, 185, 129, 0.05);
+                border: 1px solid rgba(16, 185, 129, 0.2);
+                border-radius: 10px;
+                padding: 16px 24px;
+                text-align: center;
+                min-width: 120px;
+            }
+            .stat-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #10b981;
+                font-style: italic;
+            }
+            .stat-value.payout-value {
+                color: #22c55e;
+            }
+            .stat-label {
+                font-size: 11px;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-top: 4px;
+            }
+        </style>
         
-        <!-- Phase 3 -->
-        <div class="phase-section">
-            <div class="phase-title phase-3">// PHASE 3 — THE VISION</div>
-            <div class="products-grid">
-                <div class="product-card phase-3-card mystery">
-                    <div class="product-icon">❓</div>
-                    <div class="product-name">???</div>
-                    <div class="product-status mystery-status">Phase 3</div>
-                </div>
-                <div class="product-card phase-3-card mystery">
-                    <div class="product-icon">❓</div>
-                    <div class="product-name">???</div>
-                    <div class="product-status mystery-status">Phase 3</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- THE LP -->
-        <div class="lp-wrapper">
-            <div class="lp-badge">THE LP</div>
-            <section class="lp-section">
-                <div class="lp-content">
-                <h2 class="lp-title">Toadz Liquidity</h2>
-                <p class="lp-subtitle">
-                    Deposit and earn from the Toadz ecosystem. Every deposit makes POND stronger.
-                </p>
-                
-                <!-- Wallet Info (shown when connected) -->
-                <div class="wallet-info" id="walletInfo">
-                    <div class="wallet-address" id="walletAddress">0x...0000</div>
-                    <div class="wallet-balance">
-                        <span id="sgbBalance">0</span> SGB | <span id="pondBalance">0</span> POND
+        <!-- Dual Box Layout -->
+        <div class="dual-box-layout">
+            <!-- THE LP -->
+            <div class="lp-wrapper" id="lpSection">
+                <div class="lp-badge">THE LP</div>
+                <section class="lp-section">
+                    <div class="lp-content">
+                    <h2 class="lp-title">Toadz Liquidity</h2>
+                    <p class="lp-subtitle">
+                        A universal liquidity pool powering all Toadz products. Deposit and earn SGB + POND. Let's grow together.
+                    </p>
+                    
+                    <!-- Wallet Info (shown when connected) -->
+                    <div class="wallet-info" id="walletInfo">
+                        <div class="wallet-address" id="walletAddress">0x...0000</div>
+                        <div class="wallet-balance">
+                            <span id="sgbBalance">0</span> SGB | <span id="pondBalance">0</span> POND
+                        </div>
                     </div>
-                </div>
-                
-                <div class="lp-stats">
-                    <div class="lp-stat">
-                        <div class="lp-stat-value" id="pondPrice">$0.000000</div>
-                        <div class="lp-stat-label">POND Price</div>
+                    
+                    <div class="lp-stats">
+                        <div class="lp-stat">
+                            <div class="lp-stat-value" id="pondPrice">$0.000000</div>
+                            <div class="lp-stat-label">POND Price</div>
+                        </div>
+                        <div class="lp-stat">
+                            <div class="lp-stat-value" id="marketCap">$0</div>
+                            <div class="lp-stat-label">Market Cap</div>
+                        </div>
+                        <div class="lp-stat">
+                            <div class="lp-stat-value" id="poolRatio">0</div>
+                            <div class="lp-stat-label">POND/SGB</div>
+                        </div>
                     </div>
-                    <div class="lp-stat">
-                        <div class="lp-stat-value" id="marketCap">$0</div>
-                        <div class="lp-stat-label">Market Cap</div>
+                    
+                    <!-- Lock Tier Selection - hidden when user has existing position -->
+                    <div class="lock-tiers" id="lockTiers">
+                        <button class="lock-tier-btn active" data-tier="0">
+                            30 Days
+                            <span class="multiplier">1x</span>
+                        </button>
+                        <button class="lock-tier-btn" data-tier="1">
+                            90 Days
+                            <span class="multiplier">1.5x</span>
+                        </button>
+                        <button class="lock-tier-btn" data-tier="2">
+                            180 Days
+                            <span class="multiplier">2.5x</span>
+                        </button>
                     </div>
-                    <div class="lp-stat">
-                        <div class="lp-stat-value" id="poolRatio">0</div>
-                        <div class="lp-stat-label">POND/SGB</div>
+                    
+                    <div class="lp-input-group">
+                        <div class="lp-input-wrapper">
+                            <button class="max-btn" id="maxBtn">MAX</button>
+                            <input type="number" class="lp-input" placeholder="0.00" id="sgbInput" style="padding-left: 60px;">
+                            <span class="lp-input-label">SGB</span>
+                        </div>
+                        <div class="lp-arrow">↓</div>
+                        <div class="lp-input-wrapper">
+                            <input type="number" class="lp-input lp-output" placeholder="0.00" id="pondOutput">
+                            <span class="lp-input-label">POND</span>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Lock Tier Selection - hidden when user has existing position -->
-                <div class="lock-tiers" id="lockTiers">
-                    <button class="lock-tier-btn active" data-tier="0">
-                        30 Days
-                        <span class="multiplier">1x</span>
-                    </button>
-                    <button class="lock-tier-btn" data-tier="1">
-                        90 Days
-                        <span class="multiplier">1.5x</span>
-                    </button>
-                    <button class="lock-tier-btn" data-tier="2">
-                        180 Days
-                        <span class="multiplier">2.5x</span>
-                    </button>
-                </div>
-                
-                <div class="lp-input-group">
-                    <div class="lp-input-wrapper">
-                        <button class="max-btn" id="maxBtn">MAX</button>
-                        <input type="number" class="lp-input" placeholder="0.00" id="sgbInput" style="padding-left: 60px;">
-                        <span class="lp-input-label">SGB</span>
-                    </div>
-                    <div class="lp-arrow">↓</div>
-                    <div class="lp-input-wrapper">
-                        <input type="number" class="lp-input lp-output" placeholder="0.00" id="pondOutput">
-                        <span class="lp-input-label">POND</span>
-                    </div>
-                </div>
                 
                 <button class="lp-btn" id="lpBtn">🔗 Connect Wallet</button>
                 
@@ -1182,13 +1205,289 @@
         </section>
         </div>
         
+        <!-- BUY POND Section - Compact -->
+        <div class="buy-compact">
+            <div class="buy-compact-badge">NEED POND?</div>
+            <div class="buy-compact-content">
+                <div class="buy-compact-input-row">
+                    <div class="buy-compact-input-wrap">
+                        <input type="number" class="buy-compact-input" placeholder="0.00" id="buyInput">
+                        <span class="buy-compact-label">SGB</span>
+                    </div>
+                    <div class="buy-compact-arrow">→</div>
+                    <div class="buy-compact-input-wrap">
+                        <input type="text" class="buy-compact-input" placeholder="0.00" id="buyOutput" readonly>
+                        <span class="buy-compact-label">POND</span>
+                    </div>
+                    <button class="buy-compact-btn" id="buyPondBtn">BUY POND</button>
+                </div>
+                <p class="buy-compact-note">0.5% fee → LP stakers</p>
+            </div>
+        </div>
+        
+        </div><!-- close dual-box-layout -->
+        
+        <!-- Founder Quote -->
+        <div class="founder-quote">
+            <p class="quote-text">"Everything we build is designed to reward the community. Holders first, always."</p>
+            <p class="quote-author">— Mr. Dao, Founder</p>
+        </div>
+        
+        <style>
+            .founder-quote {
+                max-width: 600px;
+                margin: 50px auto;
+                text-align: center;
+                padding: 30px;
+                border-left: 3px solid #10b981;
+                background: rgba(16, 185, 129, 0.03);
+            }
+            .quote-text {
+                font-size: 18px;
+                font-style: italic;
+                color: #e2e8f0;
+                line-height: 1.6;
+                margin-bottom: 12px;
+            }
+            .quote-author {
+                font-size: 14px;
+                color: #10b981;
+                font-weight: 600;
+            }
+            .dual-box-layout {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            .buy-compact {
+                background: rgba(16, 185, 129, 0.05);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+                border-radius: 16px;
+                padding: 20px 24px;
+                margin-top: 20px;
+                position: relative;
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+            }
+            .buy-compact-badge {
+                position: absolute;
+                top: -12px;
+                left: 24px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                padding: 4px 16px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+            }
+            .buy-compact-content {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .buy-compact-input-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .buy-compact-input-wrap {
+                flex: 1;
+                min-width: 100px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 10px 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .buy-compact-input {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 16px;
+                width: 70%;
+                outline: none;
+            }
+            .buy-compact-label {
+                color: #10b981;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .buy-compact-arrow {
+                color: #10b981;
+                font-size: 18px;
+            }
+            .buy-compact-btn {
+                background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 700;
+                font-size: 14px;
+                cursor: pointer;
+                transition: transform 0.2s;
+                white-space: nowrap;
+                animation: btnPulse 3s infinite;
+            }
+            @keyframes btnPulse {
+                0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+                50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+            }
+            .buy-compact-btn:hover {
+                transform: scale(1.05);
+            }
+            .buy-compact-note {
+                font-size: 11px;
+                color: #64748b;
+                text-align: center;
+            }
+            @media (max-width: 500px) {
+                .buy-compact-input-row {
+                    flex-direction: column;
+                }
+                .buy-compact-arrow {
+                    transform: rotate(90deg);
+                }
+                .buy-compact-btn {
+                    width: 100%;
+                }
+                .stat-box {
+                    padding: 12px 16px;
+                    min-width: 80px;
+                }
+                .stat-value {
+                    font-size: 20px;
+                }
+                .stats-row {
+                    gap: 8px;
+                }
+                .lp-section {
+                    padding: 24px 16px;
+                }
+                .products-grid {
+                    gap: 10px;
+                }
+                .product-card {
+                    padding: 16px 12px;
+                }
+            }
+        </style>
+        
         <!-- NFT Carousel -->
         <section class="nft-section">
-            <p class="nft-section-title">// THE COLLECTION</p>
+            <p class="nft-section-title roadmap-teaser" id="collectionTeaser">// THE COLLECTION</p>
             <div class="nft-carousel" id="nftCarousel">
-                <!-- NFTs loaded via JS -->
+                <div class="carousel-placeholder">Loading collection...</div>
             </div>
         </section>
+        
+        <!-- Roadmap Teaser -->
+        <div class="roadmap-teaser" id="roadmapTeaser">
+            <p class="roadmap-teaser-text">// THE ROADMAP</p>
+        </div>
+        
+        <style>
+            .roadmap-teaser {
+                width: 100%;
+                padding: 30px 20px 10px 20px;
+                text-align: center;
+                opacity: 0;
+                transform: translateX(-100px);
+                transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .roadmap-teaser.visible {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .roadmap-teaser-text {
+                font-family: 'Press Start 2P', cursive;
+                font-size: clamp(10px, 2vw, 14px);
+                color: #10b981;
+                letter-spacing: 2px;
+                background: none;
+                -webkit-background-clip: unset;
+                -webkit-text-fill-color: unset;
+                background-clip: text;
+                animation: shimmer 3s ease infinite;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+            @keyframes shimmer {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+        
+        <script>
+            const scrollElements = document.querySelectorAll('.roadmap-teaser, .scroll-in');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('visible');
+                        }, 200);
+                    }
+                });
+            }, { threshold: 0.5 });
+            scrollElements.forEach(el => observer.observe(el));
+        </script>
+        
+        <!-- Phase 1 -->
+        <div class="phase-section">
+            <div class="phase-title">// PHASE 1 — LIVE</div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-icon">🖼️</div>
+                    <div class="product-name">Marketplace</div>
+                    <div class="product-status live">● Live</div>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon">🎮</div>
+                    <div class="product-name">Toadz Arena</div>
+                    <div class="product-status live">● Live</div>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon">🏊</div>
+                    <div class="product-name">Universal LP</div>
+                    <div class="product-status live">● Live</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phase 2 -->
+        <div class="phase-section">
+            <div class="phase-title phase-2">// PHASE 2 — BUILDING</div>
+            <div class="products-grid">
+                <div class="product-card phase-2-card">
+                    <div class="product-icon">🚀</div>
+                    <div class="product-name">Memepad</div>
+                    <div class="product-status soon">Phase 2</div>
+                </div>
+                <div class="product-card phase-2-card">
+                    <div class="product-icon">📱</div>
+                    <div class="product-name">Social Tool</div>
+                    <div class="product-status soon">Phase 2</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phase 3 -->
+        <div class="phase-section">
+            <div class="phase-title phase-3">// PHASE 3 — THE VISION</div>
+            <div class="products-grid">
+                <div class="product-card phase-3-card mystery">
+                    <div class="product-icon">❓</div>
+                    <div class="product-name">???</div>
+                    <div class="product-status mystery-status">Phase 3</div>
+                </div>
+                <div class="product-card phase-3-card mystery">
+                    <div class="product-icon">❓</div>
+                    <div class="product-name">???</div>
+                    <div class="product-status mystery-status">Phase 3</div>
+                </div>
+            </div>
+        </div>
         
         <!-- Features -->
         <div class="features">
@@ -1379,9 +1678,20 @@
             const totalSupply = 11900000000;
             const marketCap = pondPriceUSD * totalSupply;
             
+            // Initial seed price for all-time calculation
+            const initialPriceUSD = 0.000021; // ~$250k mcap at launch
+            const allTimePercent = initialPriceUSD > 0 ? ((pondPriceUSD - initialPriceUSD) / initialPriceUSD * 100) : 0;
+            
             document.getElementById('pondPrice').textContent = '$' + pondPriceUSD.toFixed(8);
             document.getElementById('marketCap').textContent = '$' + formatNumber(marketCap);
             document.getElementById('poolRatio').textContent = ratio;
+            
+            const allTimeEl = document.getElementById('allTimeChange');
+            if (allTimeEl) {
+                const sign = allTimePercent >= 0 ? '+' : '';
+                allTimeEl.textContent = sign + allTimePercent.toFixed(1) + '%';
+                allTimeEl.style.color = allTimePercent >= 0 ? '#22c55e' : '#ef4444';
+            }
         }
         
         // ==================== WALLET CONNECTION ====================
@@ -1657,6 +1967,85 @@
             }
         }
         
+        // Buy POND functionality
+        const buyInput = document.getElementById('buyInput');
+        const buyOutput = document.getElementById('buyOutput');
+        const buyPondBtn = document.getElementById('buyPondBtn');
+        const buyPondPrice = document.getElementById('buyPondPrice');
+        const buyPondMcap = document.getElementById('buyPondMcap');
+        
+        buyInput.addEventListener('input', async function() {
+            const sgbAmount = parseFloat(this.value) || 0;
+            if (sgbAmount > 0 && poolData.reserveSGB > 0) {
+                const sgbInWithFee = sgbAmount * 0.995;
+                const pondOut = (sgbInWithFee * poolData.reservePOND) / (poolData.reserveSGB + sgbInWithFee);
+                buyOutput.value = pondOut.toFixed(2);
+            } else {
+                buyOutput.value = '';
+            }
+        });
+        
+        buyPondBtn.addEventListener('click', async function() {
+            if (!isConnected) {
+                await connectWallet();
+                return;
+            }
+            
+            const sgbAmount = parseFloat(buyInput.value) || 0;
+            if (sgbAmount <= 0) {
+                showModal('Please enter an amount', 'warning');
+                return;
+            }
+            
+            try {
+                buyPondBtn.textContent = 'Swapping...';
+                buyPondBtn.disabled = true;
+                
+                const poolContract = new ethers.Contract(CONTRACTS.pondPool, PONDPOOL_ABI, signer);
+                const sgbWei = ethers.utils.parseEther(sgbAmount.toString());
+                
+                const tx = await poolContract.swapSgbForPond({ value: sgbWei });
+                await tx.wait();
+                
+                showModal('POND purchased successfully! 🚀');
+                buyInput.value = '';
+                buyOutput.value = '';
+                await updateWalletUI();
+                await loadPoolData(provider);
+                
+            } catch (err) {
+                console.error('Swap failed:', err);
+                showModal('Swap failed: ' + (err.reason || err.message), 'error');
+            } finally {
+                buyPondBtn.textContent = '🚀 BUY POND';
+                buyPondBtn.disabled = false;
+            }
+        });
+        
+        // Update buy section prices
+        function updateBuyPrices() {
+            if (poolData.reserveSGB > 0 && poolData.reservePOND > 0) {
+                const priceInSgb = poolData.reserveSGB / poolData.reservePOND;
+                const priceUsd = priceInSgb * sgbPrice;
+                buyPondPrice.textContent = '$' + priceUsd.toFixed(6);
+                const mcap = priceUsd * 11900000000;
+                if (mcap >= 1000000) {
+                    buyPondMcap.textContent = '$' + (mcap / 1000000).toFixed(2) + 'M';
+                } else if (mcap >= 1000) {
+                    buyPondMcap.textContent = '$' + (mcap / 1000).toFixed(2) + 'K';
+                } else {
+                    buyPondMcap.textContent = '$' + mcap.toFixed(0);
+                }
+            }
+        }
+        
+        // Call updateBuyPrices when pool data loads
+        const originalLoadPoolData = loadPoolData;
+        loadPoolData = async function(prov) {
+            await originalLoadPoolData(prov);
+            updateBuyPrices();
+        };
+        
         async function handleWithdraw() {
             if (!isConnected) return;
             
@@ -1822,11 +2211,13 @@
                         window.open('https://toadzdrop.com', '_blank');
                     } else if (name === 'Toadz Arena') {
                         window.open('https://toadz.gg', '_blank');
+                    } else if (name === 'Universal LP') {
+                        document.getElementById('lpSection').scrollIntoView({ behavior: 'smooth' });
                     }
                 } else if (name === '???') {
-                    showModal('👀 Something big is coming...', 'warning');
+                    showModal('Something big is in the works. Stay tuned.', 'coming-soon');
                 } else {
-                    showModal(name + ' coming soon!', 'warning');
+                    showModal(name + ' launching soon. Get ready.', 'coming-soon');
                 }
             });
         });
@@ -1852,18 +2243,24 @@
             const title = document.getElementById('modalTitle');
             const msg = document.getElementById('modalMessage');
             
+            content.classList.remove('error', 'coming-soon');
+            icon.classList.remove('coming-soon');
+            
             if (type === 'error') {
                 icon.textContent = '❌';
                 title.textContent = 'Error';
                 content.classList.add('error');
+            } else if (type === 'coming-soon') {
+                icon.textContent = '🚀';
+                icon.classList.add('coming-soon');
+                title.textContent = 'Coming Soon';
+                content.classList.add('coming-soon');
             } else if (type === 'warning') {
                 icon.textContent = '⚠️';
                 title.textContent = 'Notice';
-                content.classList.remove('error');
             } else {
                 icon.textContent = '✅';
                 title.textContent = 'Success';
-                content.classList.remove('error');
             }
             
             msg.textContent = message;
@@ -1876,6 +2273,118 @@
         
         document.getElementById('customModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
+        });
+    </script>
+    <!-- Floating Holder Access Icon -->
+    <div class="holder-access-btn" id="holderAccessBtn">
+        <div class="holder-icon">🐸</div>
+    </div>
+    
+    <!-- Holder Access Modal -->
+    <div class="holder-modal-overlay" id="holderModal">
+        <div class="holder-modal">
+            <div class="holder-modal-icon">🔐</div>
+            <div class="holder-modal-title">Holder Access</div>
+            <div class="holder-modal-text">Special access page for holders.<br>Coming soon.</div>
+            <button class="holder-modal-btn" onclick="document.getElementById('holderModal').classList.remove('active')">Got it</button>
+        </div>
+    </div>
+    
+    <style>
+        .holder-access-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: 2px solid rgba(16, 185, 129, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        .holder-access-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+        }
+        .holder-icon {
+            font-size: 26px;
+        }
+        .holder-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .holder-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .holder-modal {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            max-width: 320px;
+        }
+        .holder-modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .holder-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 12px;
+        }
+        .holder-modal-text {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #10b981, #34d399, #10b981);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textShimmer 3s ease infinite;
+        }
+        @keyframes textShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .holder-modal-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+    
+    <script>
+        document.getElementById('holderAccessBtn').addEventListener('click', function() {
+            document.getElementById('holderModal').classList.add('active');
+        });
+        document.getElementById('holderModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
         });
     </script>
 </body>
