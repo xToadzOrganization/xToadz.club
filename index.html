@@ -1858,9 +1858,14 @@
                         claimPondBtn.textContent = 'No POND to Claim';
                     }
                     
-                    if (pendingSgb > 0) {
+                    // SGB claims have 14-day interval
+                    if (pendingSgb > 0 && claimableIn === 0) {
                         claimSgbBtn.disabled = false;
                         claimSgbBtn.textContent = 'Claim ' + formatNumber(pendingSgb) + ' SGB';
+                    } else if (pendingSgb > 0 && claimableIn > 0) {
+                        claimSgbBtn.disabled = true;
+                        const daysUntilClaim = Math.ceil(claimableIn / 86400);
+                        claimSgbBtn.textContent = formatNumber(pendingSgb) + ' SGB in ' + daysUntilClaim + 'd';
                     } else {
                         claimSgbBtn.disabled = true;
                         claimSgbBtn.textContent = 'No SGB to Claim';
