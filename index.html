@@ -1524,6 +1524,7 @@
         
         async function deposit() {
             const sgbAmount = parseFloat(sgbInput.value) || 0;
+            const pondAmount = parseFloat(pondOutput.value) || 0;
             if (sgbAmount <= 0) {
                 alert('Please enter an amount');
                 return;
@@ -1537,8 +1538,21 @@
                 const pondContract = new ethers.Contract(CONTRACTS.pondToken, ERC20_ABI, signer);
                 
                 const sgbWei = ethers.utils.parseEther(sgbAmount.toString());
-                const ratio = poolData.reservePOND / poolData.reserveSGB;
-                const pondNeeded = ethers.utils.parseEther((sgbAmount * ratio * 0.5).toString());
+                
+                let pondNeeded;
+                if (poolData.reserveSGB > 0 && poolData.reservePOND > 0) {
+                    const ratio = poolData.reservePOND / poolData.reserveSGB;
+                    pondNeeded = ethers.utils.parseEther((sgbAmount * ratio * 0.5).toString());
+                } else {
+                    // First depositor - use manual input
+                    if (pondAmount <= 0) {
+                        alert('Please enter POND amount for first deposit');
+                        lpBtn.classList.remove('loading');
+                        updateButtonState();
+                        return;
+                    }
+                    pondNeeded = ethers.utils.parseEther(pondAmount.toString());
+                }
                 
                 const allowance = await pondContract.allowance(userAddress, CONTRACTS.pondPool);
                 if (allowance.lt(pondNeeded)) {
