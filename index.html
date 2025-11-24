@@ -1619,31 +1619,35 @@
         
         // ==================== INITIALIZATION ====================
         async function init() {
-            await fetchSGBPrice();
-            const readProvider = new ethers.providers.JsonRpcProvider(SONGBIRD_RPC);
-            await loadPoolData(readProvider);
-            
-            document.querySelectorAll('.lock-tier-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.lock-tier-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    selectedLockTier = parseInt(this.dataset.tier);
+            try {
+                await fetchSGBPrice();
+                const readProvider = new ethers.providers.JsonRpcProvider(SONGBIRD_RPC);
+                await loadPoolData(readProvider);
+                
+                document.querySelectorAll('.lock-tier-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.lock-tier-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedLockTier = parseInt(this.dataset.tier);
+                    });
                 });
-            });
-            
-            sgbInput.addEventListener('input', calculatePondOutput);
-            maxBtn.addEventListener('click', setMaxSGB);
-            lpBtn.addEventListener('click', handleMainButton);
-            withdrawBtn.addEventListener('click', handleWithdraw);
-            claimPondBtn.addEventListener('click', handleClaimPond);
-            claimSgbBtn.addEventListener('click', handleClaimSgb);
-            
-            if (window.ethereum && window.ethereum.selectedAddress) {
-                await connectWallet();
+                
+                sgbInput.addEventListener('input', calculatePondOutput);
+                maxBtn.addEventListener('click', setMaxSGB);
+                lpBtn.addEventListener('click', handleMainButton);
+                withdrawBtn.addEventListener('click', handleWithdraw);
+                claimPondBtn.addEventListener('click', handleClaimPond);
+                claimSgbBtn.addEventListener('click', handleClaimSgb);
+                
+                if (window.ethereum && window.ethereum.selectedAddress) {
+                    await connectWallet();
+                }
+                
+                setInterval(() => loadPoolData(new ethers.providers.JsonRpcProvider(SONGBIRD_RPC)), 30000);
+                setInterval(fetchSGBPrice, 60000);
+            } catch (err) {
+                console.error('Init error:', err);
             }
-            
-            setInterval(() => loadPoolData(new ethers.providers.JsonRpcProvider(SONGBIRD_RPC)), 30000);
-            setInterval(fetchSGBPrice, 60000);
         }
         
         // ==================== POOL DATA ====================
@@ -2026,15 +2030,17 @@
         function updateBuyPrices() {
             if (poolData.reserveSGB > 0 && poolData.reservePOND > 0) {
                 const priceInSgb = poolData.reserveSGB / poolData.reservePOND;
-                const priceUsd = priceInSgb * sgbPrice;
-                buyPondPrice.textContent = '$' + priceUsd.toFixed(6);
+                const priceUsd = priceInSgb * sgbPriceUSD;
+                if (buyPondPrice) buyPondPrice.textContent = '$' + priceUsd.toFixed(6);
                 const mcap = priceUsd * 11900000000;
-                if (mcap >= 1000000) {
-                    buyPondMcap.textContent = '$' + (mcap / 1000000).toFixed(2) + 'M';
-                } else if (mcap >= 1000) {
-                    buyPondMcap.textContent = '$' + (mcap / 1000).toFixed(2) + 'K';
-                } else {
-                    buyPondMcap.textContent = '$' + mcap.toFixed(0);
+                if (buyPondMcap) {
+                    if (mcap >= 1000000) {
+                        buyPondMcap.textContent = '$' + (mcap / 1000000).toFixed(2) + 'M';
+                    } else if (mcap >= 1000) {
+                        buyPondMcap.textContent = '$' + (mcap / 1000).toFixed(2) + 'K';
+                    } else {
+                        buyPondMcap.textContent = '$' + mcap.toFixed(0);
+                    }
                 }
             }
         }
